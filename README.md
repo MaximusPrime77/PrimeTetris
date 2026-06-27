@@ -1,63 +1,64 @@
 # 🎮 PrimeTetris
 
-**PrimeTetris**, modern glassmorphism tasarımı, dinamik neon ışık efektleri, Web Audio API ses sentezleyicisi, Gamepad desteği, çoklu dil (TR/EN) seçeneği ve skor sıfırlama özelliklerine sahip retro-modern bir Tetris oyunudur.
+**PrimeTetris** is a modern, feature-packed retro-futuristic Tetris game built with Electron, Web Audio API, dynamic neon glassmorphism UI, Gamepad support, multi-language localization (EN/TR), and high score management.
 
 ---
 
-## 🌟 Özellikler (Features)
+## 🌟 Key Features
 
-- 🎨 **Modern Neon UI**: Glassmorphism ve dinamik kenarlık animasyonları ile göz alıcı retro-modern tasarım.
-- 🌐 **Çoklu Dil Desteği (TR / EN)**: Tek tıkla Türkçe ve İngilizce dil seçeneği.
-- 🔄 **Skor Sıfırlama**: En iyi skoru tek tıkla kolayca sıfırlayabilme imkanı.
-- 🎮 **Gamepad & Klavye Desteği**: İster klavye ister oyun kolu (Gamepad) ile tam uyumlu oynanış.
-- 🔊 **Web Audio API Sesler**: Nostaljik ve tatmin edici retro ses efektleri.
-- ⚡ **Taşınabilir Masaüstü Uygulaması**: Electron altyapısı ile hem web hem de masaüstü (Portable Executable) uyumlu.
+- 🎨 **Modern Neon Glassmorphism UI**: Sleek cyber-retro aesthetic with dynamic animated glowing borders.
+- 🌐 **Multi-Language Support (EN / TR)**: Instant one-click toggle between English and Turkish (starts in English by default).
+- 🔄 **High Score Reset**: One-click high score reset with smooth visual animations.
+- 🎮 **Gamepad & Keyboard Controllers**: Full support for both keyboard and Gamepad (Xbox/PlayStation/Generic controllers) with auto-detection.
+- 🔊 **Web Audio API Sound Effects**: Retro synthesized sound effects for piece drop, line clears, level ups, and game over.
+- ⚡ **Portable Desktop App & Web Ready**: Cross-platform ready, packageable into a single standalone portable `.exe`.
 
 ---
 
-## 🛠️ Kurulum ve Çalıştırma (Installation & Running)
+## 🛠️ Installation & Getting Started
 
-Projeyi bilgisayarınıza klonlayın ve bağımlılıkları yükleyin:
+Clone the repository and install dependencies:
 
 ```bash
-# Depoyu klonlayın
+# Clone the repository
 git clone https://github.com/MaximusPrime77/PrimeTetris.git
 
-# Proje dizinine gidin
+# Navigate into the project directory
 cd PrimeTetris
 
-# Gerekli paketleri yükleyin
+# Install dependencies
 npm install
 ```
 
-### Oynat / Geliştirme Modu (Dev Mode)
+### Run in Development Mode
 ```bash
 npm run dev
-# veya
+# or
 npm start
 ```
 
-### Masaüstü Sürümü Derleme (Build Portable Exe)
+### Build Portable Executable
+To generate the standalone `.exe` portable file:
 ```bash
 npm run build
 ```
 
 ---
 
-## 🎮 Kontroller (Controls)
+## 🎮 Game Controls
 
-| İşlem (Action) | Klavye (Keyboard) | Oyun Kolu (Gamepad) |
+| Action | Keyboard | Gamepad |
 | :--- | :--- | :--- |
-| **Hareket (Move)** | Yön Tuşları / A-D | D-Pad / Sol Analog |
-| **Döndür (Rotate)** | Yukarı / W | A / X Butonları |
-| **Hızlı İn (Soft Drop)** | Aşağı / S | D-Pad Aşağı / Analog |
-| **Duraklat (Pause)** | Space / P / Esc | Start Butonu |
-| **Yeniden Başlat (Reset)** | F | Select Butonu |
+| **Move** | Arrow Keys / A-D | D-Pad / Left Analog |
+| **Rotate** | Up Arrow / W | A / X Buttons |
+| **Soft Drop** | Down Arrow / S | D-Pad Down / Analog |
+| **Pause / Resume** | Space / P / Esc | Start Button |
+| **Restart Game** | F | Select Button |
 
 ---
 
-## 📄 Lisans (License)
+## 📄 License
 
-Bu proje [MIT](LICENSE) Lisansı ile lisanslanmıştır.
+This project is licensed under the [MIT License](LICENSE).
 
 Developed with ❤️ by Magnus Maximus.
