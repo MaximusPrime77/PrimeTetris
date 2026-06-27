@@ -639,7 +639,7 @@
         const muteBtn = document.getElementById('mute-btn');
 
         // --- Dil / i18n Yönetimi ---
-        let mevcutDil = localStorage.getItem('primeTetrisLang') || 'en';
+        let mevcutDil = localStorage.getItem('primeTetrisLang_v2') || 'en';
         
         const çeviriler = {
             tr: {
@@ -704,7 +704,7 @@
 
         function diliGuncelle(lang) {
             mevcutDil = lang;
-            localStorage.setItem('primeTetrisLang', lang);
+            localStorage.setItem('primeTetrisLang_v2', lang);
             document.documentElement.lang = lang;
             
             document.getElementById('lang-tr').classList.toggle('active', lang === 'tr');
