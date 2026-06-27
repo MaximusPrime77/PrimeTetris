@@ -21,6 +21,12 @@
 
 ## 📸 Highlights & Gameplay
 
+<p align="center">
+  <img src="preview1.png" width="32%" alt="English Gameplay">
+  <img src="preview2.png" width="32%" alt="Turkish Gameplay">
+  <img src="preview3.png" width="32%" alt="Paused Screen">
+</p>
+
 - 🕹️ **Dual-Language Interface**: Seamlessly switch between English and Turkish on the fly.
 - ⏸️ **Interactive Pause & Overlay**: Crisp paused screen graphics and modal game over overlays.
 - 🎯 **Responsive Scoreboard**: Real-time score, level progression, next piece preview, and high score tracking.
