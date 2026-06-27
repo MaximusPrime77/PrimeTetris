@@ -1,21 +1,24 @@
 <p align="center">
-  <img src="icon.png" width="160" alt="PrimeTetris Logo">
+  <img src="icon.png" width="160" alt="Prime Tetris Logo">
 </p>
 
-# 🎮 PrimeTetris
+# 🎮 Prime Tetris
 
-**PrimeTetris** is a modern, feature-packed retro-futuristic Tetris game built with Electron, Web Audio API, dynamic neon glassmorphism UI, Gamepad support, multi-language localization (EN/TR), and high score management.
+**Prime Tetris** is a modern, feature-packed retro-futuristic Tetris game built with Electron, Web Audio API, dynamic neon glassmorphism UI, Gamepad support, multi-language localization (EN/TR), and robust high score data management.
 
 ---
 
 ## 🌟 Key Features
 
 - 🎨 **Modern Neon Glassmorphism UI**: Sleek cyber-retro aesthetic with dynamic animated glowing borders.
-- 🌐 **Multi-Language Support (EN / TR)**: Instant one-click toggle between English and Turkish (starts in English by default).
+- 🌐 **Multi-Language Support (EN / TR)**: Instant one-click toggle between English and Turkish (starts in English by default) with localized control legends (`ARROWS/WASD`, `UP/W`).
 - 🔄 **High Score Reset**: One-click high score reset with smooth visual animations.
 - 🎮 **Gamepad & Keyboard Controllers**: Full support for both keyboard and Gamepad (Xbox/PlayStation/Generic controllers) with auto-detection.
 - 🔊 **Web Audio API Sound Effects**: Retro synthesized sound effects for piece drop, line clears, level ups, and game over.
-- ⚡ **Portable Desktop App & Web Ready**: Cross-platform ready, packageable into a single standalone portable `.exe`.
+- ⚡ **Triple Distribution Modes**:
+  - 🚀 **Portable App**: Standalone `.exe` that stores scores in a dedicated `./data/highscore.json` folder.
+  - 💻 **Desktop Installer**: Full Windows Setup wizard (`Setup.exe`) storing user data safely in `AppData`.
+  - 🌐 **Web Ready**: Pure static web app running directly in browsers using `localStorage`.
 
 ---
 
@@ -33,7 +36,7 @@
 
 ---
 
-## 🛠️ Installation & Getting Started
+## 🛠️ Installation & Build Commands
 
 Clone the repository and install dependencies:
 
@@ -55,21 +58,22 @@ npm run dev
 npm start
 ```
 
-### Build Portable Executable
-To generate the standalone `.exe` portable file:
+### Build & Auto-Deploy All Versions
+To generate the Portable `.exe`, Desktop `Setup.exe`, and Web `index.html` builds simultaneously:
 ```bash
 npm run build
 ```
+This automatically compiles and deploys binaries to the respective distribution directories (`PrimeTetrisPortable-app`, `PrimeTetrisDestkop-app`, and `PrimeTetrisWeb-app`).
 
 ---
 
 ## 🎮 Game Controls
 
-| Action | Keyboard | Gamepad |
+| Action | Keyboard (EN / TR) | Gamepad |
 | :--- | :--- | :--- |
-| **Move** | Arrow Keys / A-D | D-Pad / Left Analog |
-| **Rotate** | Up Arrow / W | A / X Buttons |
-| **Soft Drop** | Down Arrow / S | D-Pad Down / Analog |
+| **Move** | ARROWS / WASD (YÖN / WASD) | D-Pad / Left Analog |
+| **Rotate** | UP / W (ÜST / W) | A / X Buttons |
+| **Soft Drop** | Down Arrow / S (ALT / S) | D-Pad Down / Analog |
 | **Pause / Resume** | Space / P / Esc | Start Button |
 | **Restart Game** | F | Select Button |
 
