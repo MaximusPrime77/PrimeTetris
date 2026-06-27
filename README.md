@@ -65,4 +65,4 @@ npm run build
 
 This project is licensed under the [MIT License](LICENSE).
 
-Developed with ❤️ by Magnus Maximus.
+Developed with ❤️ by Maximus Decimus Meridius.
