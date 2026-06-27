@@ -2,10 +2,16 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
-// Taşınabilir olduğu için .exe'nin bulunduğu dizine skor dosyasını kaydetmek en doğrusu
-const isPackaged = app.isPackaged;
-const basePath = isPackaged ? path.dirname(process.execPath) : __dirname;
-const scoreFilePath = path.join(basePath, 'highscore.json');
+function getScoreFilePath() {
+    if (process.env.PORTABLE_EXECUTABLE_DIR) {
+        return path.join(process.env.PORTABLE_EXECUTABLE_DIR, 'highscore.json');
+    }
+    try {
+        return path.join(app.getPath('userData'), 'highscore.json');
+    } catch (e) {
+        return path.join(__dirname, 'highscore.json');
+    }
+}
 
 function createWindow() {
     const mainWindow = new BrowserWindow({
@@ -51,6 +57,7 @@ app.on('window-all-closed', () => {
 // IPC Handler: Skoru Oku
 ipcMain.handle('get-high-score', () => {
     try {
+        const scoreFilePath = getScoreFilePath();
         if (fs.existsSync(scoreFilePath)) {
             const data = fs.readFileSync(scoreFilePath, 'utf8');
             return JSON.parse(data).highScore || 0;
@@ -64,6 +71,7 @@ ipcMain.handle('get-high-score', () => {
 // IPC Handler: Skoru Kaydet
 ipcMain.on('save-high-score', (event, score) => {
     try {
+        const scoreFilePath = getScoreFilePath();
         fs.writeFileSync(scoreFilePath, JSON.stringify({ highScore: score }));
     } catch (e) {
         console.error('Skor kaydetme hatası:', e);
@@ -73,6 +81,7 @@ ipcMain.on('save-high-score', (event, score) => {
 // IPC Handler: Skoru Sıfırla
 ipcMain.on('reset-high-score', () => {
     try {
+        const scoreFilePath = getScoreFilePath();
         fs.writeFileSync(scoreFilePath, JSON.stringify({ highScore: 0 }));
     } catch (e) {
         console.error('Skor sıfırlama hatası:', e);
