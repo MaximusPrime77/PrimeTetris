@@ -56,4 +56,8 @@ npm run build
 
 ---
 
+## 📄 Lisans (License)
+
+Bu proje [MIT](LICENSE) Lisansı ile lisanslanmıştır.
+
 Developed with ❤️ by Magnus Maximus.
