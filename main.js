@@ -2,14 +2,33 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
-function getScoreFilePath() {
+function getScoreDir() {
     if (process.env.PORTABLE_EXECUTABLE_DIR) {
-        return path.join(process.env.PORTABLE_EXECUTABLE_DIR, 'highscore.json');
+        return path.join(process.env.PORTABLE_EXECUTABLE_DIR, 'data');
     }
     try {
-        return path.join(app.getPath('userData'), 'highscore.json');
+        return path.join(app.getPath('userData'), 'data');
     } catch (e) {
-        return path.join(__dirname, 'highscore.json');
+        return path.join(__dirname, 'data');
+    }
+}
+
+function getScoreFilePath() {
+    return path.join(getScoreDir(), 'highscore.json');
+}
+
+function ensureDataDirAndFile() {
+    try {
+        const dir = getScoreDir();
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true });
+        }
+        const filePath = getScoreFilePath();
+        if (!fs.existsSync(filePath)) {
+            fs.writeFileSync(filePath, JSON.stringify({ highScore: 0 }), 'utf8');
+        }
+    } catch (e) {
+        console.error('Data klasörü veya dosya oluşturma hatası:', e);
     }
 }
 
@@ -39,6 +58,7 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+    ensureDataDirAndFile();
     createWindow();
 
     app.on('activate', () => {
@@ -71,6 +91,7 @@ ipcMain.handle('get-high-score', () => {
 // IPC Handler: Skoru Kaydet
 ipcMain.on('save-high-score', (event, score) => {
     try {
+        ensureDataDirAndFile();
         const scoreFilePath = getScoreFilePath();
         fs.writeFileSync(scoreFilePath, JSON.stringify({ highScore: score }));
     } catch (e) {
@@ -81,6 +102,7 @@ ipcMain.on('save-high-score', (event, score) => {
 // IPC Handler: Skoru Sıfırla
 ipcMain.on('reset-high-score', () => {
     try {
+        ensureDataDirAndFile();
         const scoreFilePath = getScoreFilePath();
         fs.writeFileSync(scoreFilePath, JSON.stringify({ highScore: 0 }));
     } catch (e) {
