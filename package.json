@@ -1,0 +1,25 @@
+{
+  "name": "prime-tetris",
+  "version": "1.0.0",
+  "description": "PrimeTetris Portable Game",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron .",
+    "build": "electron-builder --win portable"
+  },
+  "author": "Magnus Maximus",
+  "license": "ISC",
+  "build": {
+    "appId": "com.prime.tetris",
+    "productName": "PrimeTetris",
+    "win": {
+      "target": "portable",
+      "icon": "icon.ico"
+    }
+  },
+  "devDependencies": {
+    "electron": "^41.2.2",
+    "electron-builder": "^26.8.1"
+  }
+}

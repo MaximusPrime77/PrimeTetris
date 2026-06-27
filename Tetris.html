@@ -1,0 +1,1440 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PrimeTetris</title>
+    <link rel="icon" href="icon.png" type="image/png">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Orbitron:wght@500;700;900&display=swap');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --primary: #00f2fe;
+            --secondary: #4facfe;
+            --accent: #ff0844;
+            --bg-color: #0b0c10;
+            --glass-bg: rgba(20, 24, 36, 0.65);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --text-main: #ffffff;
+            --text-dim: #8b9bb4;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(79, 172, 254, 0.15), transparent 35%),
+                radial-gradient(circle at 85% 30%, rgba(255, 8, 68, 0.15), transparent 35%);
+            background-attachment: fixed;
+            color: var(--text-main);
+            font-family: 'Montserrat', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            -webkit-app-region: drag; /* Pencereyi sürüklenebilir yap */
+        }
+
+        .background-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(2rem, 5vw, 3.5rem); 
+            margin: 5px 0;
+            font-weight: 900;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0px 0px 30px rgba(79, 172, 254, 0.4);
+            letter-spacing: 12px;
+            text-align: center;
+        }
+        
+        .game-wrapper {
+            display: flex;
+            flex-wrap: wrap; 
+            gap: 26px;
+            align-items: flex-start; 
+            justify-content: center;
+            padding: 26px; 
+            border-radius: 24px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+            max-width: 98vw;
+            width: fit-content;
+            margin: 0 auto;
+            max-height: 94vh; 
+            position: relative;
+            background: var(--glass-bg);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid var(--glass-border);
+            -webkit-app-region: no-drag;
+        }
+        .game-wrapper::-webkit-scrollbar { display: none; }
+
+        /* Sadece kenarlarda dalgalanan Google AI (Gemini) çerçevesi */
+        .game-wrapper::after {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            border-radius: 24px;
+            padding: 2px; /* Çerçeve kalınlığı */
+            background: linear-gradient(60deg, #00f2fe, #4facfe, #f093fb, #f5576c, #00f2fe);
+            background-size: 300% 300%;
+            animation: waveBorder 6s ease infinite;
+            
+            /* İç kısmı şeffaf bırakıp sadece padding (kenarlık) alanını gösterme */
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            
+            pointer-events: none; /* İçerideki butonlara tıklamayı engellememesi için */
+        }
+
+        @keyframes waveBorder {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .canvas-container {
+            position: relative;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 16px;
+            box-shadow: inset 0 0 25px rgba(0,0,0,0.9);
+            border: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        canvas {
+            display: block;
+            border-radius: 8px;
+        }
+
+        .game-over-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            border-radius: 16px;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .game-over-overlay h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 900;
+            color: #ff0844;
+            font-size: clamp(3rem, 7vw, 4.5rem);
+            margin: 0 0 10px 0;
+            text-shadow: 0 0 25px rgba(255, 8, 68, 0.8);
+            letter-spacing: 6px;
+            text-align: center;
+        }
+
+        .game-over-overlay p {
+            color: #fff;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.5rem;
+            margin: 0 0 30px 0;
+            font-weight: bold;
+        }
+
+        .game-over-overlay .modal-btn {
+            background: linear-gradient(135deg, #00f2fe, #4facfe);
+            border: none;
+            color: white;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            font-size: 1.1rem;
+            padding: 15px 35px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 0 10px 20px rgba(0, 242, 254, 0.4);
+        }
+
+        .game-over-overlay .modal-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 15px 25px rgba(0, 242, 254, 0.6);
+        }
+
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 11px; 
+            width: 215px;
+            min-width: 215px;
+            flex-shrink: 0;
+            max-height: 100%;
+        }
+        
+        .right-panel::-webkit-scrollbar {
+            display: none; /* Chrome, Safari and Opera */
+        }
+
+        .panel-box {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            padding: 12px 10px;
+            text-align: center;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+            position: relative;
+            width: 100%;
+        }
+        
+        .panel-box.small-panel {
+            padding: 10px;
+        }
+        
+        /* Skor tablosu etrafında dalgalanan ışık */
+        .panel-box::after {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            border-radius: 16px;
+            padding: 1.5px; /* Çerçeve kalınlığı */
+            background: linear-gradient(60deg, #00f2fe, #4facfe, #f093fb, #f5576c, #00f2fe);
+            background-size: 300% 300%;
+            animation: waveBorder 6s ease infinite;
+            
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            
+            pointer-events: none;
+        }
+
+        .panel-box:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .panel-box h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.02rem;
+            margin: 0 0 5px 0;
+            color: var(--secondary);
+            text-transform: uppercase;
+            letter-spacing: 2.1px;
+        }
+
+        .panel-box .value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(1.2rem, 4vw, 2rem); 
+            font-weight: 800;
+            margin-top: 5px;
+            color: #fff;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .game-btn {
+            height: 39px; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.02rem;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            color: #fff;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+            box-sizing: border-box;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .game-btn::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: all 0.5s ease;
+        }
+
+        .game-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .game-btn:hover::before {
+            left: 100%;
+        }
+
+        .game-btn:active {
+            transform: translateY(1px);
+        }
+
+        #play-pause-btn {
+            border-left: 3px solid #f5576c;
+        }
+        #play-pause-btn:hover {
+            background: rgba(245, 87, 108, 0.15);
+            border-color: rgba(245, 87, 108, 0.3);
+            border-left: 3px solid #f5576c;
+            box-shadow: 0 8px 20px rgba(245, 87, 108, 0.25);
+            text-shadow: 0 0 10px rgba(245, 87, 108, 0.8);
+        }
+        #play-pause-btn:active {
+            box-shadow: 0 4px 10px rgba(245, 87, 108, 0.2);
+        }
+
+        #reset-btn {
+            border-left: 3px solid #00f2fe;
+        }
+        #reset-btn:hover {
+            background: rgba(0, 242, 254, 0.15);
+            border-color: rgba(0, 242, 254, 0.3);
+            border-left: 3px solid #00f2fe;
+            box-shadow: 0 8px 20px rgba(0, 242, 254, 0.25);
+            text-shadow: 0 0 10px rgba(0, 242, 254, 0.8);
+        }
+        #reset-btn:active {
+            box-shadow: 0 4px 10px rgba(0, 242, 254, 0.2);
+        }
+
+        #mute-btn {
+            border-left: 3px solid #6c5ce7;
+        }
+        #mute-btn:hover {
+            background: rgba(108, 92, 231, 0.15);
+            border-color: rgba(108, 92, 231, 0.3);
+            border-left: 3px solid #6c5ce7;
+            box-shadow: 0 8px 20px rgba(108, 92, 231, 0.25);
+            text-shadow: 0 0 10px rgba(108, 92, 231, 0.8);
+        }
+        #mute-btn.muted {
+            border-left-color: #ff0844;
+            color: #ff0844;
+            box-shadow: 0 0 20px rgba(255, 8, 68, 0.2);
+            text-shadow: 0 0 10px rgba(255, 8, 68, 0.8);
+        }
+
+        /* Dil Seçici CSS */
+        .lang-group {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 4px;
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            width: 100%;
+        }
+        .lang-btn {
+            flex: 1;
+            padding: 6px 12px;
+            border: none;
+            background: transparent;
+            color: var(--text-dim);
+            font-weight: 800;
+            font-size: 0.85rem;
+            font-family: 'Orbitron', sans-serif;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .lang-btn:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .lang-btn.active {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(0, 242, 254, 0.3);
+        }
+
+        /* High Score Reset Button CSS */
+        .reset-score-btn {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-dim);
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.3s ease;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 5;
+        }
+        .reset-score-btn:hover {
+            color: #ff0844;
+            border-color: #ff0844;
+            background: rgba(255, 8, 68, 0.15);
+            transform: rotate(180deg) scale(1.1);
+            box-shadow: 0 0 10px rgba(255, 8, 68, 0.4);
+        }
+
+        .gamepad-status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 8px;
+            background: rgba(0,0,0,0.4);
+            border-radius: 12px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            border: 1px solid var(--glass-border);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #ff0844;
+            box-shadow: 0 0 12px #ff0844;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .status-dot.connected {
+            background-color: #00ff88;
+            box-shadow: 0 0 15px #00ff88;
+        }
+
+        .controls-info {
+            position: fixed;
+            bottom: 20px;
+            right: 50px;
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
+            padding: 12px;
+            border-radius: 16px;
+            line-height: 1.4;
+            border: 1px solid var(--glass-border);
+            z-index: 1000;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        
+        .controls-info:hover {
+            opacity: 1;
+        }
+
+        @media (max-width: 1200px) {
+            .controls-info {
+                display: none; /* Küçük ekranlarda gizle veya başka yere taşı */
+            }
+        }
+        
+        .controls-info h3 {
+            margin: 0 0 10px 0;
+            font-size: 0.8rem;
+            color: var(--secondary);
+            text-transform: uppercase;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding-bottom: 6px;
+            letter-spacing: 1px;
+        }
+
+        .controls-info h3:last-of-type {
+            margin-top: 12px;
+        }
+
+        .controls-info ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .controls-info li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+        
+        .controls-info li span {
+            color: #fff;
+            font-weight: bold;
+            background: rgba(255,255,255,0.1);
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+        }
+
+        /* Mobil ve küçük ekranlar için duyarlılık */
+        @media (max-width: 768px) {
+            body {
+                overflow: auto;
+                padding-bottom: 20px;
+            }
+            .game-wrapper {
+                flex-direction: column;
+                gap: 20px;
+                padding: 20px;
+                max-height: none;
+            }
+            .right-panel {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 15px;
+            }
+            .panel-box, .btn-group, .gamepad-status, .lang-group {
+                flex: 1 1 150px;
+            }
+            .controls-info {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="background-grid"></div>
+    <h1 id="app-title">PRIMETETRIS</h1>
+
+
+    <div class="game-wrapper">
+        <div class="canvas-container">
+            <canvas id="tetris"></canvas>
+            
+            <div id="game-over-overlay" class="game-over-overlay" style="display: none;">
+                <h2 id="go-title">GAME OVER</h2>
+                <p><span id="go-score-text">SKOR:</span> <span id="final-score">0</span></p>
+                <button id="modal-reset-btn" class="modal-btn">YENİDEN OYNA</button>
+            </div>
+        </div>
+        
+        <div class="right-panel">
+            <div class="panel-box">
+                <h2 id="lbl-score">SKOR</h2>
+                <div class="value" id="skor">0</div>
+            </div>
+            <div class="panel-box small-panel">
+                <h2 id="lbl-level" style="color: #00ff88; font-size: 0.85rem;">SEVİYE</h2>
+                <div class="value" id="seviye" style="color: #00ff88; text-shadow: 0 0 20px rgba(0, 255, 136, 0.5); font-size: 1.6rem;">1</div>
+            </div>
+            <div class="panel-box small-panel" style="position: relative;">
+                <button id="reset-high-score-btn" class="reset-score-btn" title="En İyi Skoru Sıfırla">↺</button>
+                <h2 id="lbl-high-score" style="color: #f5576c; font-size: 0.85rem;">EN İYİ</h2>
+                <div class="value" id="en-iyi-skor" style="color: #f5576c; text-shadow: 0 0 20px rgba(245, 87, 108, 0.5); font-size: 1.6rem;">0</div>
+            </div>
+            <div class="panel-box small-panel">
+                <h2 id="lbl-next" style="color: #00f2fe; font-size: 0.85rem;">SIRADAKİ</h2>
+                <canvas id="next-canvas" width="80" height="80" style="display: block; margin: 10px auto;"></canvas>
+            </div>
+            
+            <div class="btn-group">
+                <button id="play-pause-btn" class="game-btn">DURAKLAT</button>
+                <button id="reset-btn" class="game-btn">SIFIRLA</button>
+                <button id="mute-btn" class="game-btn">SES</button>
+            </div>
+            
+            <div class="gamepad-status" id="gamepad-status">
+                <div class="status-dot" id="status-dot"></div>
+                <span id="gamepad-text">KOL BEKLENİYOR</span>
+            </div>
+
+            <div class="lang-group">
+                <button id="lang-tr" class="lang-btn active">TR</button>
+                <button id="lang-en" class="lang-btn">EN</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls-info">
+        <h3 id="lbl-kb-title">KLAVYE</h3>
+        <ul style="list-style: none; padding: 0;">
+            <li style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span id="lbl-kb-move-txt">Hareket</span> <span>YÖN/WASD</span></li>
+            <li style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span id="lbl-kb-rotate-txt">Döndür</span> <span>ÜST/W</span></li>
+            <li style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span id="lbl-kb-drop-txt">Hızlı İn</span> <span>ALT/S</span></li>
+            <li style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span id="lbl-kb-pause-txt">Duraklat/Başlat</span> <span>SPACE</span></li>
+            <li style="display: flex; justify-content: space-between;"><span id="lbl-kb-reset-txt">Sıfırla</span> <span>F</span></li>
+        </ul>
+        <h3 id="lbl-gp-title" style="margin-top: 8px;">GAMEPAD</h3>
+        <ul style="list-style: none; padding: 0;">
+            <li style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span id="lbl-gp-move-txt">Hareket</span> <span>D-PAD/ANALOG</span></li>
+            <li style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span id="lbl-gp-rotate-txt">Döndür</span> <span>A / X</span></li>
+            <li style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span id="lbl-gp-pause-txt">Duraklat</span> <span>START</span></li>
+            <li style="display: flex; justify-content: space-between;"><span id="lbl-gp-reset-txt">Sıfırla</span> <span>SELECT</span></li>
+        </ul>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('tetris');
+        const context = canvas.getContext('2d');
+        const skorElementi = document.getElementById('skor');
+        const enIyiSkorElementi = document.getElementById('en-iyi-skor');
+        const seviyeElementi = document.getElementById('seviye');
+        const playPauseBtn = document.getElementById('play-pause-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const gamepadStatusText = document.getElementById('gamepad-text');
+        const statusDot = document.getElementById('status-dot');
+        const nextCanvas = document.getElementById('next-canvas');
+        const nextContext = nextCanvas.getContext('2d');
+        const muteBtn = document.getElementById('mute-btn');
+
+        // --- Dil / i18n Yönetimi ---
+        let mevcutDil = localStorage.getItem('primeTetrisLang') || 'tr';
+        
+        const çeviriler = {
+            tr: {
+                title: "PRIMETETRIS",
+                score: "SKOR",
+                level: "SEVİYE",
+                highScore: "EN İYİ",
+                next: "SIRADAKİ",
+                pause: "DURAKLAT",
+                resume: "DEVAM ET",
+                reset: "SIFIRLA",
+                sound: "SES",
+                gamepadWaiting: "KOL BEKLENİYOR",
+                gamepadConnected: "KOL BAĞLANDI",
+                gameOver: "GAME OVER",
+                finalScore: "SKOR:",
+                playAgain: "YENİDEN OYNA",
+                pausedText: "DURAKLATILDI",
+                kbTitle: "KLAVYE",
+                kbMove: "Hareket",
+                kbRotate: "Döndür",
+                kbDrop: "Hızlı İn",
+                kbPause: "Duraklat/Başlat",
+                kbReset: "Sıfırla",
+                gpTitle: "GAMEPAD",
+                gpMove: "Hareket",
+                gpRotate: "Döndür",
+                gpPause: "Duraklat",
+                gpReset: "Sıfırla",
+                resetHighScoreTitle: "En İyi Skoru Sıfırla"
+            },
+            en: {
+                title: "PRIMETETRIS",
+                score: "SCORE",
+                level: "LEVEL",
+                highScore: "HIGH SCORE",
+                next: "NEXT",
+                pause: "PAUSE",
+                resume: "RESUME",
+                reset: "RESTART",
+                sound: "SOUND",
+                gamepadWaiting: "WAITING FOR GAMEPAD",
+                gamepadConnected: "GAMEPAD CONNECTED",
+                gameOver: "GAME OVER",
+                finalScore: "SCORE:",
+                playAgain: "PLAY AGAIN",
+                pausedText: "PAUSED",
+                kbTitle: "KEYBOARD",
+                kbMove: "Move",
+                kbRotate: "Rotate",
+                kbDrop: "Soft Drop",
+                kbPause: "Pause/Resume",
+                kbReset: "Restart",
+                gpTitle: "GAMEPAD",
+                gpMove: "Move",
+                gpRotate: "Rotate",
+                gpPause: "Pause",
+                gpReset: "Restart",
+                resetHighScoreTitle: "Reset High Score"
+            }
+        };
+
+        function diliGuncelle(lang) {
+            mevcutDil = lang;
+            localStorage.setItem('primeTetrisLang', lang);
+            document.documentElement.lang = lang;
+            
+            document.getElementById('lang-tr').classList.toggle('active', lang === 'tr');
+            document.getElementById('lang-en').classList.toggle('active', lang === 'en');
+            
+            const t = çeviriler[lang];
+            document.getElementById('app-title').innerText = t.title;
+            document.getElementById('lbl-score').innerText = t.score;
+            document.getElementById('lbl-level').innerText = t.level;
+            document.getElementById('lbl-high-score').innerText = t.highScore;
+            document.getElementById('lbl-next').innerText = t.next;
+            
+            if (oyunDuraklatildi) {
+                playPauseBtn.innerText = t.resume;
+            } else {
+                playPauseBtn.innerText = t.pause;
+            }
+            resetBtn.innerText = t.reset;
+            muteBtn.innerText = t.sound;
+            
+            if (gamepadConnected) {
+                gamepadStatusText.innerText = t.gamepadConnected;
+            } else {
+                gamepadStatusText.innerText = t.gamepadWaiting;
+            }
+            
+            document.getElementById('go-title').innerText = t.gameOver;
+            document.getElementById('go-score-text').innerText = t.finalScore;
+            document.getElementById('modal-reset-btn').innerText = t.playAgain;
+            
+            document.getElementById('lbl-kb-title').innerText = t.kbTitle;
+            document.getElementById('lbl-kb-move-txt').innerText = t.kbMove;
+            document.getElementById('lbl-kb-rotate-txt').innerText = t.kbRotate;
+            document.getElementById('lbl-kb-drop-txt').innerText = t.kbDrop;
+            document.getElementById('lbl-kb-pause-txt').innerText = t.kbPause;
+            document.getElementById('lbl-kb-reset-txt').innerText = t.kbReset;
+            
+            document.getElementById('lbl-gp-title').innerText = t.gpTitle;
+            document.getElementById('lbl-gp-move-txt').innerText = t.gpMove;
+            document.getElementById('lbl-gp-rotate-txt').innerText = t.gpRotate;
+            document.getElementById('lbl-gp-pause-txt').innerText = t.gpPause;
+            document.getElementById('lbl-gp-reset-txt').innerText = t.gpReset;
+            
+            document.getElementById('reset-high-score-btn').title = t.resetHighScoreTitle;
+            
+            if (oyunDuraklatildi) {
+                duraklatCizimi();
+            }
+        }
+
+        document.getElementById('lang-tr').addEventListener('click', () => diliGuncelle('tr'));
+        document.getElementById('lang-en').addEventListener('click', () => diliGuncelle('en'));
+
+        // --- Ses Yönetimi (Web Audio API - Premium Retro Sentez) ---
+        const Sound = {
+            ctx: null,
+            muted: false,
+            
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            },
+
+            toggle() {
+                this.muted = !this.muted;
+                muteBtn.classList.toggle('muted', this.muted);
+                localStorage.setItem('primeTetrisMuted', this.muted);
+            },
+
+            play(type) {
+                if (this.muted) return;
+                this.init();
+                if (!this.ctx) return;
+
+                const now = this.ctx.currentTime;
+                const master = this.ctx.createGain();
+                const filter = this.ctx.createBiquadFilter();
+                
+                master.connect(filter);
+                filter.connect(this.ctx.destination);
+                master.gain.setValueAtTime(0.3, now);
+
+                if (type === 'place') {
+                    const osc = this.ctx.createOscillator();
+                    const g = this.ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(250, now);
+                    osc.frequency.exponentialRampToValueAtTime(80, now + 0.12);
+                    g.gain.setValueAtTime(0.4, now);
+                    g.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+                    osc.connect(g).connect(master);
+                    osc.start();
+                    osc.stop(now + 0.12);
+                    
+                    const click = this.ctx.createOscillator();
+                    const clickG = this.ctx.createGain();
+                    click.type = 'triangle';
+                    click.frequency.setValueAtTime(1000, now);
+                    clickG.gain.setValueAtTime(0.1, now);
+                    clickG.gain.linearRampToValueAtTime(0, now + 0.02);
+                    click.connect(clickG).connect(master);
+                    click.start();
+                    click.stop(now + 0.02);
+
+                } else if (type === 'clear') {
+                    const osc = this.ctx.createOscillator();
+                    const g = this.ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(880, now);
+                    osc.frequency.exponentialRampToValueAtTime(1200, now + 0.05);
+                    g.gain.setValueAtTime(0.5, now);
+                    g.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                    osc.connect(g).connect(master);
+                    osc.start();
+                    osc.stop(now + 0.15);
+
+                    const snap = this.ctx.createOscillator();
+                    const snapG = this.ctx.createGain();
+                    snap.type = 'triangle';
+                    snap.frequency.setValueAtTime(2500, now);
+                    snapG.gain.setValueAtTime(0.2, now);
+                    snapG.gain.linearRampToValueAtTime(0, now + 0.03);
+                    snap.connect(snapG).connect(master);
+                    snap.start();
+                    snap.stop(now + 0.03);
+
+                } else if (type === 'levelUp') {
+                    const osc = this.ctx.createOscillator();
+                    const g = this.ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(100, now);
+                    osc.frequency.exponentialRampToValueAtTime(800, now + 0.6);
+                    g.gain.setValueAtTime(0, now);
+                    g.gain.linearRampToValueAtTime(0.3, now + 0.3);
+                    g.gain.linearRampToValueAtTime(0, now + 0.6);
+                    osc.connect(g).connect(master);
+                    osc.start();
+                    osc.stop(now + 0.6);
+
+                } else if (type === 'gameOver') {
+                    const osc = this.ctx.createOscillator();
+                    const g = this.ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(150, now);
+                    osc.frequency.linearRampToValueAtTime(20, now + 1.5);
+                    g.gain.setValueAtTime(0.5, now);
+                    g.gain.linearRampToValueAtTime(0, now + 1.5);
+                    osc.connect(g).connect(master);
+                    osc.start();
+                    osc.stop(now + 1.5);
+                }
+            }
+        };
+
+        // Tercihi yükle
+        if (localStorage.getItem('primeTetrisMuted') === 'true' || localStorage.getItem('maximusTetrisMuted') === 'true') {
+            Sound.toggle();
+        }
+        muteBtn.addEventListener('click', () => Sound.toggle());
+
+        const SUTUN = 13;
+        const SATIR = 21;
+        let skor = 0;
+        let enIyiSkor = 0;
+        let seviye = 1;
+        let toplamSatirlar = 0;
+
+        async function initHighScore() {
+            if (window.api) {
+                enIyiSkor = await window.api.getHighScore();
+            } else {
+                enIyiSkor = parseInt(localStorage.getItem('primeTetrisHighScore')) || parseInt(localStorage.getItem('maximusTetrisHighScore')) || 0;
+            }
+            enIyiSkorElementi.innerText = enIyiSkor;
+        }
+        initHighScore();
+
+        async function enIyiSkoruSifirla() {
+            enIyiSkor = 0;
+            enIyiSkorElementi.innerText = '0';
+            if (window.api && window.api.resetHighScore) {
+                window.api.resetHighScore();
+            } else {
+                localStorage.setItem('primeTetrisHighScore', 0);
+            }
+            enIyiSkorElementi.style.transform = 'scale(1.3)';
+            enIyiSkorElementi.style.color = '#ff0844';
+            setTimeout(() => {
+                enIyiSkorElementi.style.transform = 'scale(1)';
+                enIyiSkorElementi.style.color = '#f5576c';
+            }, 300);
+        }
+
+        document.getElementById('reset-high-score-btn').addEventListener('click', enIyiSkoruSifirla);
+        
+        let tahta = [];
+
+        function tahtayiSifirla() {
+            tahta = [];
+            for (let r = 0; r < SATIR; r++) {
+                tahta[r] = [];
+                for (let c = 0; c < SUTUN; c++) {
+                    tahta[r][c] = 0;
+                }
+            }
+        }
+        tahtayiSifirla();
+
+        const RENKLER = [
+            null, 
+            '#FF0D72', 
+            '#0DC2FF', 
+            '#0DFF72', 
+            '#F538FF', 
+            '#FF8E0D', 
+            '#FFE138', 
+            '#3877FF'
+        ];
+
+        const PARCALAR = [
+            [], 
+            [[1, 1, 1, 1]], 
+            [[2, 0, 0], [2, 2, 2]], 
+            [[0, 0, 3], [3, 3, 3]], 
+            [[4, 4], [4, 4]], 
+            [[0, 5, 5], [5, 5, 0]], 
+            [[0, 6, 0], [6, 6, 6]], 
+            [[7, 7, 0], [0, 7, 7]]
+        ];
+
+        let aktifParca = { x: 0, y: 0, matris: [], renk: 0 };
+        let siradakiParca = null;
+        let oyunDuraklatildi = false;
+
+        // --- Dinamik Yeniden Boyutlandırma (Responsive) ---
+        function resizeOyun() {
+            const isMobile = window.innerWidth <= 850; // Threshold artırıldı
+            const gameWrapper = document.querySelector('.game-wrapper');
+            
+            if (isMobile) {
+                gameWrapper.style.flexDirection = 'column';
+                gameWrapper.style.alignItems = 'center';
+            } else {
+                gameWrapper.style.flexDirection = 'row';
+                gameWrapper.style.alignItems = 'flex-start';
+            }
+
+            const panelGenislik = isMobile ? 0 : 265; // %2 arttırıldı
+            const maxGenislik = window.innerWidth - panelGenislik - 82; 
+            const maxYukseklik = window.innerHeight - 160; 
+            
+            let yeniBlokBoyutu = Math.floor(Math.min(maxYukseklik / SATIR, maxGenislik / SUTUN));
+            
+            if (yeniBlokBoyutu < 15) yeniBlokBoyutu = 15;
+            if (yeniBlokBoyutu > 40) yeniBlokBoyutu = 40; 
+            
+            BLOK_BOYUTU = yeniBlokBoyutu;
+            canvas.width = SUTUN * BLOK_BOYUTU;
+            canvas.height = SATIR * BLOK_BOYUTU;
+            
+            if (window.oyunBittiDurumu) {
+                oyunBittiCizimi();
+            } else if (oyunDuraklatildi) {
+                duraklatCizimi();
+            } else {
+                ciz();
+            }
+        }
+
+        window.addEventListener('resize', resizeOyun);
+
+        function ciz() {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            
+            context.strokeStyle = 'rgba(255,255,255,0.04)';
+            context.lineWidth = 1;
+            for(let i=0; i<=SUTUN; i++) {
+                context.beginPath(); context.moveTo(i*BLOK_BOYUTU, 0); context.lineTo(i*BLOK_BOYUTU, canvas.height); context.stroke();
+            }
+            for(let i=0; i<=SATIR; i++) {
+                context.beginPath(); context.moveTo(0, i*BLOK_BOYUTU); context.lineTo(canvas.width, i*BLOK_BOYUTU); context.stroke();
+            }
+
+            cizMatris(tahta, { x: 0, y: 0 });
+            cizMatris(aktifParca.matris, aktifParca);
+            cizSiradaki();
+        }
+
+        function cizSiradaki() {
+            nextContext.clearRect(0, 0, nextCanvas.width, nextCanvas.height);
+            if (siradakiParca === null) return;
+
+            const matris = PARCALAR[siradakiParca];
+            const renk = RENKLER[siradakiParca];
+            const size = 18;
+            const offsetX = (nextCanvas.width - matris[0].length * size) / 2;
+            const offsetY = (nextCanvas.height - matris.length * size) / 2;
+
+            matris.forEach((satir, y) => {
+                satir.forEach((deger, x) => {
+                    if (deger !== 0) {
+                        nextContext.fillStyle = renk;
+                        nextContext.fillRect(offsetX + x * size + 1, offsetY + y * size + 1, size - 2, size - 2);
+                        nextContext.strokeStyle = 'rgba(255,255,255,0.2)';
+                        nextContext.strokeRect(offsetX + x * size + 2, offsetY + y * size + 2, size - 4, size - 4);
+                    }
+                });
+            });
+        }
+
+        function cizMatris(matris, pozisyon) {
+            matris.forEach((satir, y) => {
+                satir.forEach((deger, x) => {
+                    if (deger !== 0) {
+                        const px = (pozisyon.x + x) * BLOK_BOYUTU;
+                        const py = (pozisyon.y + y) * BLOK_BOYUTU;
+                        
+                        // Premium Flat Effect
+                        context.fillStyle = RENKLER[deger];
+                        context.fillRect(px + 1.5, py + 1.5, BLOK_BOYUTU - 3, BLOK_BOYUTU - 3);
+                        context.strokeStyle = 'rgba(255,255,255,0.2)';
+                        context.strokeRect(px + 2.5, py + 2.5, BLOK_BOYUTU - 5, BLOK_BOYUTU - 5);
+                    }
+                });
+            });
+        }
+
+        let canta = [];
+
+        function siradakiParcayiAl() {
+            if (canta.length === 0) {
+                canta = [1, 2, 3, 4, 5, 6, 7];
+                for (let i = canta.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [canta[i], canta[j]] = [canta[j], canta[i]];
+                }
+            }
+            return canta.pop();
+        }
+
+        function parcaOlustur() {
+            if (siradakiParca === null) siradakiParca = siradakiParcayiAl();
+            const rastgeleIndex = siradakiParca;
+            siradakiParca = siradakiParcayiAl();
+            
+            const matris = PARCALAR[rastgeleIndex];
+            aktifParca = {
+                x: Math.floor(SUTUN / 2) - Math.floor(matris[0].length / 2),
+                y: 0,
+                matris: matris,
+                renk: rastgeleIndex
+            };
+            if (carpismaKontrol(tahta, aktifParca)) {
+                oyunBitti();
+            }
+        }
+
+        function parcaDusur() {
+            aktifParca.y++;
+            if (carpismaKontrol(tahta, aktifParca)) {
+                aktifParca.y--;
+                parcaKilitle();
+                Sound.play('place');
+                satirTemizle();
+                parcaOlustur();
+            }
+            dusmeSayaci = 0;
+        }
+
+        function parcaKilitle() {
+            aktifParca.matris.forEach((satir, y) => {
+                satir.forEach((deger, x) => {
+                    if (deger !== 0) {
+                        tahta[aktifParca.y + y][aktifParca.x + x] = aktifParca.renk;
+                    }
+                });
+            });
+        }
+
+        function carpismaKontrol(tahta, parca) {
+            for (let y = 0; y < parca.matris.length; y++) {
+                for (let x = 0; x < parca.matris[y].length; x++) {
+                    if (parca.matris[y][x] !== 0) {
+                        let yeniX = parca.x + x;
+                        let yeniY = parca.y + y;
+                        if (yeniX < 0 || yeniX >= SUTUN || yeniY >= SATIR) return true;
+                        if (yeniY < 0) continue;
+                        if (tahta[yeniY] && tahta[yeniY][yeniX] !== 0) return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        function parcaHareket(yon) {
+            if (oyunDuraklatildi) return; 
+            aktifParca.x += yon;
+            if (carpismaKontrol(tahta, aktifParca)) {
+                aktifParca.x -= yon;
+            }
+        }
+
+        function parcaDondur() {
+            if (oyunDuraklatildi) return;
+            const eskiMatris = aktifParca.matris;
+            const yeniMatris = [];
+            for (let y = 0; y < eskiMatris[0].length; y++) {
+                yeniMatris[y] = [];
+                for (let x = 0; x < eskiMatris.length; x++) {
+                    yeniMatris[y][x] = eskiMatris[eskiMatris.length - 1 - x][y];
+                }
+            }
+            aktifParca.matris = yeniMatris;
+            
+            if (carpismaKontrol(tahta, aktifParca)) {
+                let basarili = false;
+                let offsets = [ {x: 1, y: 0}, {x: -1, y: 0}, {x: 2, y: 0}, {x: -2, y: 0}, {x: 0, y: -1} ]; // Duvar Sektirme - SRS
+                for (let offset of offsets) {
+                    aktifParca.x += offset.x;
+                    aktifParca.y += offset.y;
+                    if (!carpismaKontrol(tahta, aktifParca)) {
+                        basarili = true;
+                        break;
+                    }
+                    aktifParca.x -= offset.x;
+                    aktifParca.y -= offset.y;
+                }
+                if (!basarili) {
+                    aktifParca.matris = eskiMatris;
+                }
+            }
+        }
+        
+        function satirTemizle() {
+            let temizlenenSatirSayisi = 0;
+            disDon: for (let y = SATIR - 1; y >= 0; y--) {
+                for (let x = 0; x < SUTUN; x++) {
+                    if (tahta[y][x] === 0) continue disDon;
+                }
+                const silinenSatir = tahta.splice(y, 1)[0].fill(0);
+                tahta.unshift(silinenSatir);
+                y++;
+                temizlenenSatirSayisi++;
+            }
+            if (temizlenenSatirSayisi > 0) {
+                toplamSatirlar += temizlenenSatirSayisi;
+                
+                // Seviye Atlatma Logic (Her 10 satırda bir)
+                let yeniSeviye = Math.floor(toplamSatirlar / 10) + 1;
+                if (yeniSeviye > seviye) {
+                    seviye = yeniSeviye;
+                    seviyeElementi.innerText = seviye;
+                    Sound.play('levelUp');
+                    
+                    // Seviye Atlatma Efekti
+                    seviyeElementi.style.transform = 'scale(1.5)';
+                    seviyeElementi.style.textShadow = '0 0 30px #00ff88';
+                    setTimeout(() => {
+                        seviyeElementi.style.transform = 'scale(1)';
+                        seviyeElementi.style.textShadow = '0 0 20px rgba(0, 255, 136, 0.5)';
+                    }, 500);
+                }
+
+                // Profesyonel Puanlama: (Temel Puan) * Seviye
+                // 1: 100, 2: 300, 3: 500, 4: 800
+                const temelPuanlar = [0, 100, 300, 500, 800];
+                skor += temelPuanlar[temizlenenSatirSayisi] * seviye;
+                skorElementi.innerText = skor;
+                Sound.play('clear');
+                
+                if (skor > enIyiSkor) {
+                    enIyiSkor = skor;
+                    if (window.api) {
+                        window.api.saveHighScore(enIyiSkor);
+                    } else {
+                        localStorage.setItem('maximusTetrisHighScore', enIyiSkor);
+                    }
+                    enIyiSkorElementi.innerText = enIyiSkor;
+                    enIyiSkorElementi.style.transform = 'scale(1.2)';
+                    setTimeout(() => enIyiSkorElementi.style.transform = 'scale(1)', 300);
+                }
+                
+                skorElementi.style.color = '#00f2fe';
+                skorElementi.style.transform = 'scale(1.3)';
+                skorElementi.style.textShadow = '0 0 30px #00f2fe';
+                setTimeout(() => {
+                    skorElementi.style.color = '#fff';
+                    skorElementi.style.transform = 'scale(1)';
+                    skorElementi.style.textShadow = '0 0 20px rgba(255, 255, 255, 0.4)';
+                }, 300);
+            }
+        }
+
+        function duraklatCizimi() {
+            context.fillStyle = 'rgba(0, 0, 0, 0.75)';
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            context.fillStyle = '#00f2fe';
+            let fs1 = Math.floor(canvas.width * 0.1);
+            context.font = `900 ${fs1}px Orbitron`;
+            context.textAlign = 'center';
+            context.shadowColor = '#00f2fe';
+            context.shadowBlur = 15;
+            context.fillText(çeviriler[mevcutDil].pausedText, canvas.width / 2, canvas.height / 2);
+            context.shadowBlur = 0; 
+        }
+
+        function oyunBitti() {
+            window.oyunBittiDurumu = true;
+            Sound.play('gameOver');
+            document.getElementById('final-score').innerText = skor;
+            document.getElementById('game-over-overlay').style.display = 'flex';
+        }
+
+        // --- Sıfırlama Mantığı ---
+        function oyunuSifirla() {
+            window.oyunBittiDurumu = false;
+            document.getElementById('game-over-overlay').style.display = 'none';
+            
+            tahtayiSifirla();
+            skor = 0;
+            skorElementi.innerText = '0';
+            seviye = 1;
+            toplamSatirlar = 0;
+            seviyeElementi.innerText = '1';
+            canta = [];
+            
+            oyunDuraklatildi = false;
+            playPauseBtn.innerText = çeviriler[mevcutDil].pause;
+            
+            parcaOlustur();
+            
+            sonZaman = performance.now();
+            dusmeSayaci = 0;
+
+            resetBtn.blur();
+        }
+
+        resetBtn.addEventListener('click', oyunuSifirla);
+        document.getElementById('modal-reset-btn').addEventListener('click', oyunuSifirla);
+
+        // --- Klavye Kontrolleri (State-based) ---
+        const basiliTuslar = {};
+        let klavyeHareketCooldown = 0;
+        let klavyeDusmeCooldown = 0;
+
+        document.addEventListener('keydown', event => {
+            const tus = event.key.toLowerCase();
+            basiliTuslar[tus] = true;
+
+            if (tus === 'arrowup' || tus === 'w') {
+                parcaDondur();
+            } else if (tus === 'p' || event.key === 'escape' || tus === ' ') {
+                if (window.oyunBittiDurumu) {
+                    oyunuSifirla();
+                } else {
+                    oyunuDuraklatVeyaDevamEttir();
+                }
+                event.preventDefault();
+            } else if (tus === 'f') {
+                oyunuSifirla();
+            }
+        });
+
+        document.addEventListener('keyup', event => {
+            const tus = event.key.toLowerCase();
+            basiliTuslar[tus] = false;
+        });
+
+        function klavyeGuncelle() {
+            if (window.oyunBittiDurumu || oyunDuraklatildi) return;
+
+            if (klavyeHareketCooldown > 0) {
+                klavyeHareketCooldown--;
+            } else {
+                if (basiliTuslar['arrowleft'] || basiliTuslar['a']) {
+                    parcaHareket(-1);
+                    klavyeHareketCooldown = 8;
+                } else if (basiliTuslar['arrowright'] || basiliTuslar['d']) {
+                    parcaHareket(1);
+                    klavyeHareketCooldown = 8;
+                }
+            }
+
+            if (klavyeDusmeCooldown > 0) {
+                klavyeDusmeCooldown--;
+                if (basiliTuslar['arrowdown'] || basiliTuslar['s']) {
+                    if (klavyeDusmeCooldown % 3 === 0) parcaDusur();
+                }
+            } else {
+                if (basiliTuslar['arrowdown'] || basiliTuslar['s']) {
+                    parcaDusur();
+                    klavyeDusmeCooldown = 3;
+                }
+            }
+        }
+
+        // --- Gamepad API Entegrasyonu ---
+        let gamepadConnected = false;
+        let gamepadCooldown = 0;
+
+        window.addEventListener("gamepadconnected", (e) => {
+            gamepadConnected = true;
+            statusDot.classList.add('connected');
+            gamepadStatusText.innerText = çeviriler[mevcutDil].gamepadConnected;
+        });
+
+        window.addEventListener("gamepaddisconnected", (e) => {
+            gamepadConnected = false;
+            statusDot.classList.remove('connected');
+            gamepadStatusText.innerText = çeviriler[mevcutDil].gamepadWaiting;
+        });
+
+        function gamepadGuncelle() {
+            const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
+            const gp = gamepads[0];
+
+            if (!gp) return;
+            if (!gamepadConnected) {
+                 gamepadConnected = true;
+                 statusDot.classList.add('connected');
+                 gamepadStatusText.innerText = çeviriler[mevcutDil].gamepadConnected;
+            }
+
+            if (gamepadCooldown > 0) {
+                gamepadCooldown--;
+                if (gp.buttons[13] && gp.buttons[13].pressed || gp.axes[1] > 0.5) {
+                    if (gamepadCooldown % 3 === 0 && !oyunDuraklatildi) parcaDusur(); 
+                }
+                return;
+            }
+
+            const buttonPressed = (btnIndex) => gp.buttons[btnIndex] && gp.buttons[btnIndex].pressed;
+
+            if (buttonPressed(8)) {
+                oyunuSifirla();
+                gamepadCooldown = 30;
+                return;
+            }
+
+            if (window.oyunBittiDurumu) {
+                if (buttonPressed(0) || buttonPressed(1) || buttonPressed(2) || buttonPressed(3) || buttonPressed(9)) {
+                    oyunuSifirla();
+                    gamepadCooldown = 20;
+                }
+                return;
+            }
+
+            if (buttonPressed(0) || buttonPressed(1) || buttonPressed(2) || buttonPressed(3) || buttonPressed(12)) {
+                parcaDondur();
+                gamepadCooldown = 15;
+            }
+            else if (buttonPressed(14) || gp.axes[0] < -0.5) {
+                parcaHareket(-1);
+                gamepadCooldown = 8;
+            }
+            else if (buttonPressed(15) || gp.axes[0] > 0.5) {
+                parcaHareket(1);
+                gamepadCooldown = 8;
+            }
+            else if (buttonPressed(13) || gp.axes[1] > 0.5) {
+                if (!oyunDuraklatildi) {
+                    parcaDusur();
+                    gamepadCooldown = 3;
+                }
+            }
+
+            if (buttonPressed(9)) {
+                oyunuDuraklatVeyaDevamEttir();
+                gamepadCooldown = 30; 
+            }
+        }
+
+        // --- Duraklatma Mantığı ---
+        function oyunuDuraklatVeyaDevamEttir() {
+            if (window.oyunBittiDurumu) return;
+
+            oyunDuraklatildi = !oyunDuraklatildi;
+
+            if (oyunDuraklatildi) {
+                playPauseBtn.innerText = çeviriler[mevcutDil].resume;
+                duraklatCizimi();
+            } else {
+                playPauseBtn.innerText = çeviriler[mevcutDil].pause;
+                sonZaman = performance.now(); 
+            }
+            playPauseBtn.blur();
+        }
+        
+        playPauseBtn.addEventListener('click', oyunuDuraklatVeyaDevamEttir);
+
+        // --- Oyun Döngüsü ---
+        let dusmeSayaci = 0;
+        let dusmeAraligi = 1000;
+        let animasyonCercevesi;
+        let sonZaman = performance.now();
+
+        function guncelle(zaman) {
+            animasyonCercevesi = requestAnimationFrame(guncelle);
+            if (!zaman) zaman = performance.now();
+            
+            gamepadGuncelle(); 
+            klavyeGuncelle(); 
+
+            if (window.oyunBittiDurumu || oyunDuraklatildi) return;
+
+            const gecenZaman = zaman - sonZaman;
+            sonZaman = zaman;
+
+            let etkiliSeviye = Math.min(seviye, 10);
+            let guncelHiz = 1000 - (etkiliSeviye - 1) * 85;
+
+            dusmeSayaci += gecenZaman;
+            if (dusmeSayaci > guncelHiz) {
+                parcaDusur();
+            }
+
+            ciz(); 
+        }
+
+        // Oyunu Başlat
+        diliGuncelle(mevcutDil);
+        window.oyunBittiDurumu = false;
+        parcaOlustur();
+        resizeOyun(); 
+        animasyonCercevesi = requestAnimationFrame(guncelle);
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Builds & Output
+dist/
+Masaustu Surumu/
+*.exe
+*.zip
+
+# Game Saves & Logs
+highscore.json
+*.log
+
+# IDE & OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+builder-debug.yml
+builder-effective-config.yaml
