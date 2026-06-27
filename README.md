@@ -4,21 +4,21 @@
 
 # 🎮 Prime Tetris
 
-**Prime Tetris** is a modern, feature-packed retro-futuristic Tetris game built with Electron, Web Audio API, dynamic neon glassmorphism UI, Gamepad support, multi-language localization (EN/TR), and robust high score data management.
+**Prime Tetris** is a modern, feature-packed retro-futuristic Tetris game built with Electron, Web Audio API, dynamic neon glassmorphism UI, Gamepad support, multi-language localization (EN/TR), and flexible multi-platform distribution.
 
 ---
 
 ## 🌟 Key Features
 
-- 🎨 **Modern Neon Glassmorphism UI**: Sleek cyber-retro aesthetic with dynamic animated glowing borders.
-- 🌐 **Multi-Language Support (EN / TR)**: Instant one-click toggle between English and Turkish (starts in English by default) with localized control legends (`ARROWS/WASD`, `UP/W`).
-- 🔄 **High Score Reset**: One-click high score reset with smooth visual animations.
-- 🎮 **Gamepad & Keyboard Controllers**: Full support for both keyboard and Gamepad (Xbox/PlayStation/Generic controllers) with auto-detection.
-- 🔊 **Web Audio API Sound Effects**: Retro synthesized sound effects for piece drop, line clears, level ups, and game over.
-- ⚡ **Triple Distribution Modes**:
-  - 🚀 **Portable App**: Standalone `.exe` that stores scores in a dedicated `./data/highscore.json` folder.
-  - 💻 **Desktop Installer**: Full Windows Setup wizard (`Setup.exe`) storing user data safely in `AppData`.
-  - 🌐 **Web Ready**: Pure static web app running directly in browsers using `localStorage`.
+- 🎨 **Modern Neon Glassmorphism UI**: Sleek cyber-retro aesthetic with dynamic animated glowing borders and vibrant typography.
+- 🌐 **Multi-Language Support (EN / TR)**: Instant one-click toggle between English and Turkish with dynamically localized control reference cards (`ARROWS/WASD` and `YÖN/WASD`).
+- 🔄 **High Score Management**: Real-time high score tracking with a one-click reset button and smooth visual animations.
+- 🎮 **Gamepad & Keyboard Controllers**: Full Plug-and-Play support for Xbox, PlayStation, and generic PC controllers with auto-detection.
+- 🔊 **Web Audio API Sound Effects**: Retro synthesized sound effects for piece drops, line clears, level ups, and game over states.
+- 📦 **Triple Distribution Modes**:
+  - 🚀 **Portable App**: Standalone `.exe` that stores scores in a dedicated `./data/` folder—ideal for USB drives.
+  - 💻 **Desktop Installer**: Full Windows Setup wizard (`PrimeTetris Setup.exe`) with desktop shortcuts.
+  - 🌐 **Web Ready**: Pure static web app running directly in modern web browsers using `localStorage`.
 
 ---
 
@@ -58,7 +58,7 @@ npm run dev
 npm start
 ```
 
-### Build & Auto-Deploy All Versions
+### Build & Deploy All Versions
 To generate the Portable `.exe`, Desktop `Setup.exe`, and Web `index.html` builds simultaneously:
 ```bash
 npm run build
