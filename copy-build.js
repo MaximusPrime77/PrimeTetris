@@ -11,12 +11,12 @@ const webTargetDir = path.join(rootDir, 'PrimeTetrisWeb-app');
 
 console.log('📦 Derleme sonrası dosyalar ayrıştırılıp yerleştiriliyor...');
 
-// 1. Web Sürümü Kopyalama
+// 1. Web Sürümü Kopyalama (Özel Web / Wallpaper Düzenlemeleri Korunur)
 if (fs.existsSync(webTargetDir)) {
     try {
         const htmlSrc = path.join(projectDir, 'Tetris.html');
         const htmlDest = path.join(webTargetDir, 'index.html');
-        if (fs.existsSync(htmlSrc)) {
+        if (fs.existsSync(htmlSrc) && !fs.existsSync(htmlDest)) {
             fs.copyFileSync(htmlSrc, htmlDest);
             console.log(`🌐 Web sürümü (index.html) yerleştirildi.`);
         }
