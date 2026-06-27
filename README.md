@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="icon.png" width="160" alt="PrimeTetris Logo">
+</p>
+
 # 🎮 PrimeTetris
 
 **PrimeTetris** is a modern, feature-packed retro-futuristic Tetris game built with Electron, Web Audio API, dynamic neon glassmorphism UI, Gamepad support, multi-language localization (EN/TR), and high score management.
