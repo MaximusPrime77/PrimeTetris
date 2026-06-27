@@ -19,6 +19,14 @@
 
 ---
 
+## 📸 Highlights & Gameplay
+
+- 🕹️ **Dual-Language Interface**: Seamlessly switch between English and Turkish on the fly.
+- ⏸️ **Interactive Pause & Overlay**: Crisp paused screen graphics and modal game over overlays.
+- 🎯 **Responsive Scoreboard**: Real-time score, level progression, next piece preview, and high score tracking.
+
+---
+
 ## 🛠️ Installation & Getting Started
 
 Clone the repository and install dependencies:
