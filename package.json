@@ -6,13 +6,14 @@
   "scripts": {
     "start": "electron .",
     "dev": "electron .",
-    "build": "electron-builder --win portable"
+    "build": "electron-builder --win portable && node copy-build.js",
+    "deploy": "node copy-build.js"
   },
   "author": "Maximus Decimus Meridius",
   "license": "MIT",
   "build": {
     "appId": "com.prime.tetris",
-    "productName": "PrimeTetris",
+    "productName": "Prime Tetris",
     "win": {
       "target": "portable",
       "icon": "icon.ico"

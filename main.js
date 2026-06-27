@@ -20,7 +20,7 @@ function createWindow() {
             symbolColor: '#00f2fe',
             height: 30
         },
-        title: "PrimeTetris",
+        title: "Prime Tetris",
         icon: path.join(__dirname, 'icon.png'),
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),

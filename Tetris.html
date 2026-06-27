@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PrimeTetris</title>
+    <title>Prime Tetris</title>
     <link rel="icon" href="icon.png" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Orbitron:wght@500;700;900&display=swap');
-
         * {
             box-sizing: border-box;
             margin: 0;
@@ -555,7 +556,7 @@
 </head>
 <body>
     <div class="background-grid"></div>
-    <h1 id="app-title">PRIMETETRIS</h1>
+    <h1 id="app-title">PRIME TETRIS</h1>
 
 
     <div class="game-wrapper">
@@ -609,11 +610,11 @@
     <div class="controls-info">
         <h3 id="lbl-kb-title">KLAVYE</h3>
         <ul style="list-style: none; padding: 0;">
-            <li style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span id="lbl-kb-move-txt">Hareket</span> <span>YÖN/WASD</span></li>
-            <li style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span id="lbl-kb-rotate-txt">Döndür</span> <span>ÜST/W</span></li>
-            <li style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span id="lbl-kb-drop-txt">Hızlı İn</span> <span>ALT/S</span></li>
-            <li style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span id="lbl-kb-pause-txt">Duraklat/Başlat</span> <span>SPACE</span></li>
-            <li style="display: flex; justify-content: space-between;"><span id="lbl-kb-reset-txt">Sıfırla</span> <span>F</span></li>
+            <li style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span id="lbl-kb-move-txt">Hareket</span> <span id="lbl-kb-move-val">YÖN/WASD</span></li>
+            <li style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span id="lbl-kb-rotate-txt">Döndür</span> <span id="lbl-kb-rotate-val">ÜST/W</span></li>
+            <li style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span id="lbl-kb-drop-txt">Hızlı İn</span> <span id="lbl-kb-drop-val">ALT/S</span></li>
+            <li style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span id="lbl-kb-pause-txt">Duraklat/Başlat</span> <span id="lbl-kb-pause-val">SPACE</span></li>
+            <li style="display: flex; justify-content: space-between;"><span id="lbl-kb-reset-txt">Sıfırla</span> <span id="lbl-kb-reset-val">F</span></li>
         </ul>
         <h3 id="lbl-gp-title" style="margin-top: 8px;">GAMEPAD</h3>
         <ul style="list-style: none; padding: 0;">
@@ -643,7 +644,7 @@
         
         const çeviriler = {
             tr: {
-                title: "PRIMETETRIS",
+                title: "PRIME TETRIS",
                 score: "SKOR",
                 level: "SEVİYE",
                 highScore: "EN İYİ",
@@ -660,7 +661,9 @@
                 pausedText: "DURAKLATILDI",
                 kbTitle: "KLAVYE",
                 kbMove: "Hareket",
+                kbMoveVal: "YÖN/WASD",
                 kbRotate: "Döndür",
+                kbRotateVal: "ÜST/W",
                 kbDrop: "Hızlı İn",
                 kbPause: "Duraklat/Başlat",
                 kbReset: "Sıfırla",
@@ -672,7 +675,7 @@
                 resetHighScoreTitle: "En İyi Skoru Sıfırla"
             },
             en: {
-                title: "PRIMETETRIS",
+                title: "PRIME TETRIS",
                 score: "SCORE",
                 level: "LEVEL",
                 highScore: "HIGH SCORE",
@@ -689,7 +692,9 @@
                 pausedText: "PAUSED",
                 kbTitle: "KEYBOARD",
                 kbMove: "Move",
+                kbMoveVal: "ARROWS/WASD",
                 kbRotate: "Rotate",
+                kbRotateVal: "UP/W",
                 kbDrop: "Soft Drop",
                 kbPause: "Pause/Resume",
                 kbReset: "Restart",
@@ -737,7 +742,9 @@
             
             document.getElementById('lbl-kb-title').innerText = t.kbTitle;
             document.getElementById('lbl-kb-move-txt').innerText = t.kbMove;
+            if (document.getElementById('lbl-kb-move-val')) document.getElementById('lbl-kb-move-val').innerText = t.kbMoveVal;
             document.getElementById('lbl-kb-rotate-txt').innerText = t.kbRotate;
+            if (document.getElementById('lbl-kb-rotate-val')) document.getElementById('lbl-kb-rotate-val').innerText = t.kbRotateVal;
             document.getElementById('lbl-kb-drop-txt').innerText = t.kbDrop;
             document.getElementById('lbl-kb-pause-txt').innerText = t.kbPause;
             document.getElementById('lbl-kb-reset-txt').innerText = t.kbReset;
