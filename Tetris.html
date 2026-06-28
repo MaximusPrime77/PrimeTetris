@@ -1113,6 +1113,25 @@
             } else {
                 ciz();
             }
+
+            hizalaKontrolButonu();
+        }
+
+        function hizalaKontrolButonu() {
+            const gameWrapper = document.querySelector('.game-wrapper');
+            const controlsBtn = document.getElementById('controls-toggle-btn');
+            const controlsInfo = document.getElementById('controls-info');
+            if (gameWrapper && controlsBtn && window.innerWidth > 768) {
+                const rect = gameWrapper.getBoundingClientRect();
+                const mesafedanAlt = Math.max(20, Math.floor(window.innerHeight - rect.bottom + 15));
+                controlsBtn.style.bottom = mesafedanAlt + 'px';
+                if (controlsInfo) {
+                    controlsInfo.style.bottom = (mesafedanAlt + 50) + 'px';
+                }
+            } else if (controlsBtn && window.innerWidth <= 768) {
+                controlsBtn.style.bottom = '15px';
+                if (controlsInfo) controlsInfo.style.bottom = '70px';
+            }
         }
 
         window.addEventListener('resize', resizeOyun);
